@@ -1,0 +1,65 @@
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+
+@WebServlet("/SavenormalVisitorDetailsServlet")
+public class SavenormalVisitorDetailsServlet extends HttpServlet {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Extract the visitorName from the button name
+    	String visitorIDString = request.getParameter("visitorID");
+    	int visitorID = Integer.parseInt(visitorIDString);
+
+    	// Use the unique submit button name
+
+        // Extract the corresponding checkOutTime and securityCode
+        String checkOutTime = request.getParameter("checkOutTime");
+        
+        System.out.println(checkOutTime);
+
+        String url = "jdbc:mysql://localhost:3306/ssss";
+        String user = "root";
+        String pass = "Akhil2004@";
+
+        Connection connection = null;
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            connection = DriverManager.getConnection(url, user, pass);
+            String updateSql = "UPDATE normalvisits SET CheckOutTime = ? where visitorID= ?";
+            PreparedStatement updateStatement = connection.prepareStatement(updateSql);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            java.util.Date parsedDate = sdf.parse(checkOutTime);
+            java.sql.Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+
+            updateStatement.setTimestamp(1, timestamp);
+            updateStatement.setInt(2, visitorID);
+           
+
+            // Execute the update statement
+            updateStatement.executeUpdate();
+
+            updateStatement.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        response.sendRedirect("normalVistorDetails.jsp");
+    }
+}
